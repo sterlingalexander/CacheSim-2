@@ -1,0 +1,42 @@
+===== 506 DSM (MESI with Full-bit Vector Simulator Configuration =====
+L1_SIZE:               1048576
+L1_ASSOC:              8
+L1_BLOCKSIZE:          128
+NUMBER OF PROCESSORS:  4
+TRACE FILE:            canneal.04t.longTrace
+===== Simulation results (Cache_0)      =====
+01. number of reads:                              112661
+02. number of read misses:                        5340
+03. number of writes:                             11942
+04. number of write misses:                       39
+05. total miss rate:                              0.043169
+06. number of writebacks:                         111
+07. number of invalidations:                      2066
+08. number of cache to cache transfers:           4071
+===== Simulation results (Cache_1)      =====
+01. number of reads:                              110830
+02. number of read misses:                        5386
+03. number of writes:                             11710
+04. number of write misses:                       40
+05. total miss rate:                              0.044279
+06. number of writebacks:                         121
+07. number of invalidations:                      2089
+08. number of cache to cache transfers:           1413
+===== Simulation results (Cache_2)      =====
+01. number of reads:                              114938
+02. number of read misses:                        5341
+03. number of writes:                             12383
+04. number of write misses:                       42
+05. total miss rate:                              0.042279
+06. number of writebacks:                         117
+07. number of invalidations:                      2053
+08. number of cache to cache transfers:           65
+===== Simulation results (Cache_3)      =====
+01. number of reads:                              113428
+02. number of read misses:                        5384
+03. number of writes:                             12108
+04. number of write misses:                       39
+05. total miss rate:                              0.043199
+06. number of writebacks:                         134
+07. number of invalidations:                      2068
+08. number of cache to cache transfers:           71

@@ -1,0 +1,61 @@
+#ifndef ENTRY_H
+#define ENTRY_H
+
+#include <cmath>
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+extern int DEBUG;
+
+typedef unsigned long ulong;
+typedef unsigned char uchar;
+typedef unsigned int uint;
+
+enum {
+   EXCLUSIVE_MODIFIED = 0,
+   SHARED,
+   UNOWNED
+};
+
+class entry  {
+   public:
+
+      entry()  {   }
+      ~entry()   {   }
+       
+      friend ostream &operator<<(ostream &stream, entry obj);
+         
+      void clearAll()   {  tag = 0; state = UNOWNED; dirty = false;
+                           for (int i = 0; i < 4; i++)  processor[i] = 0;
+                           if (DEBUG)  {
+                              cout << "In the definition of entry, where we just created:\n";
+                              cout << "\t\t" << tag << ", " << state << ", " << dirty << " , ";
+                              for (int i = 0; i < 4; i++) cout << processor[i] << ", ";
+                              cout << "\n";
+                           }
+                        }
+      void onZero()              { processor[0] = 1; }
+      void offZero()             { processor[0] = 0; }
+      void onOne()               { processor[1] = 1; }
+      void offOne()              { processor[1] = 0; }
+      void onTwo()               { processor[2] = 1; }
+      void offTwo()              { processor[2] = 0; }
+      void onThree()             { processor[3] = 1; }
+      void offThree()            { processor[3] = 0; }
+      void setTag(ulong addr)    { tag = addr; }
+      ulong getTag()             { return tag; }
+      void setState(int pstate)  { state = pstate; }
+      int getState()             { return state; }
+      bool isDirty()             { return dirty; }
+      void setDirty()            { dirty = true; }
+      void setClean()            { dirty = false; }
+
+      ulong tag;
+      int processor[4];
+      int state;
+      bool dirty;
+};
+
+#endif
