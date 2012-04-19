@@ -17,6 +17,7 @@ typedef unsigned char uchar;
 typedef unsigned int uint;
 
 /****add new states, based on the protocol****/
+/*
 enum {
     INVALID = 0,
     EXCLUSIVE, // Also VALID-EXCLUSIVE
@@ -24,25 +25,19 @@ enum {
     SHARED_MODIFIED,
     MODIFIED // Also DIRTY
 };
-
-struct FBV {
-   ulong tag;
-   char flags;
-   int state;
-   bool dirty;
-};
-
+*/
 
 enum {
-   EXCLUSIVE_MODIFIED = 0,
+   EXCLUSIVE = 0, 
+   MODIFIED,
    SHARED,
-   UNOWNED
+   INVALID
 };
 
 class cacheLine {
 protected:
     ulong tag;
-    ulong Flags; // 0:invalid, 1:exclusive, 2:shared_clean, 3:shared_modified, 4:modified 
+    ulong Flags; // 0:exclusive, 1:modified, 2:shared, 3:invalid 
     ulong seq;
 
 public:
@@ -150,7 +145,7 @@ public:
         memoryTransactions++;
     }
     
-    void Access(ulong, uchar, std::vector<Cache*> &, std::vector<FBV> &, int);
+    void Access(ulong, uchar, std::vector<Cache*> &, directory &, int);
     void printStats();
     void updateLRU(cacheLine *);
 

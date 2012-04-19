@@ -36,26 +36,28 @@ class entry  {
                               cout << "\n";
                            }
                         }
-      void onZero()              { processor[0] = 1; }
-      void offZero()             { processor[0] = 0; }
-      void onOne()               { processor[1] = 1; }
-      void offOne()              { processor[1] = 0; }
-      void onTwo()               { processor[2] = 1; }
-      void offTwo()              { processor[2] = 0; }
-      void onThree()             { processor[3] = 1; }
-      void offThree()            { processor[3] = 0; }
-      void setTag(ulong addr)    { tag = addr; }
-      ulong getTag()             { return tag; }
-      void setState(int pstate)  { state = pstate; }
-      int getState()             { return state; }
-      bool isDirty()             { return dirty; }
-      void setDirty()            { dirty = true; }
-      void setClean()            { dirty = false; }
+        void onZero()                 { processor[0] = 1; }
+        void offZero()                { processor[0] = 0; }
+        void onOne()                  { processor[1] = 1; }
+        void offOne()                 { processor[1] = 0; }
+        void onTwo()                  { processor[2] = 1; }
+        void offTwo()                 { processor[2] = 0; }
+        void onThree()                { processor[3] = 1; }
+        void offThree()               { processor[3] = 0; }
+        void processorOn(int p)       { processor[p] = 1; }
+        void processorOff(int p)      { processor[p] = 0; }      
+        void setTag(ulong addr)       { tag = addr; }
+        ulong getTag()                { return tag; }
+        void setState(int pstate)     { state = pstate; }
+        int getState()                { return state; }
+        bool isDirty()                { return dirty; }
+        void setDirty()               { dirty = true; }
+        void setClean()               { dirty = false; }
 
-      ulong tag;
-      int processor[4];
-      int state;
-      bool dirty;
+        ulong tag;
+        int processor[4];
+        int state;
+        bool dirty;
 };
 
 #endif

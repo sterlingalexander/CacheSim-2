@@ -12,8 +12,6 @@
 #include "cache.h"
 using namespace std;
 
-int findInDirectory(ulong addr, vector<FBV> directory);
-int getUnownedPos();
 
 Cache::Cache(int s, int a, int b, int p) {
     ulong i, j;
@@ -55,7 +53,7 @@ Cache::Cache(int s, int a, int b, int p) {
 /**you might add other parameters to Access()
 since this function is an entry point
 to the memory hierarchy (i.e. caches)**/
-void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, vector<FBV> directory) {
+void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory dir, int proc_num) {
     currentCycle++; /*per cache global counter to maintain LRU order
 			among cache ways, updated on every cache access*/
 
@@ -68,10 +66,31 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, vector<FBV
     cacheLine *line = findLine(addr);
     
     if (line == NULL || line->getFlags() == INVALID)  {     // cache miss
-      int dir_pos = findInDirectory(addr, directory);
-      if (dir_pos < 0)  {                                   // (not in directory)
-         int insert_pos = getUnownedPos();
-      }
+        int dir_pos = dir.findTagPos(addr);
+        if (op == 'r')  {
+            if (dir_pos < 0)  {                 // cache miss, directory miss
+                int insert_pos = dir.findUnownedPos();
+                dir[insert_pos].setTag(addr);
+                dir[insert_pos].processorOn(proc_num);
+                dir[insert_pos].setState(EXCLUSIVE_MODIFIED);
+                cacheLine *newline = fillLine(addr);
+                newline->setFlags(EXCLUSIVE);
+                memoryTransactions++;
+            }
+            else  {         // cache miss, directory hit -- update state in other caches
+                dir[dir_pos].processorOn(proc_num);
+                dir[dir_pos].setState(SHARED);
+                cacheLine *newline = fillLine(addr);
+                newline->setFlags(SHARED);
+                for (int i = 0; i < 4; ++i)  {
+                    if (i = proc_num)  continue;
+                    else  {
+                        cacheLine *line = cachesArray[i].findLine(addr);
+                        if (line != NULL) 
+                            line->setState(SHARED);
+                    }
+                }
+            }
 
     
 /*
@@ -268,7 +287,10 @@ cacheLine * Cache::getLRU(ulong addr) {
     }
 
     assert(victim != assoc);
-
+    //============================
+    // DO DIRECTORY EVICTION HERE|
+    //============================
+    
     return &(cache[i][victim]);
 }
 
