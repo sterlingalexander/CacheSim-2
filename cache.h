@@ -15,6 +15,7 @@
 typedef unsigned long ulong;
 typedef unsigned char uchar;
 typedef unsigned int uint;
+extern int NODES;
 
 /****add new states, based on the protocol****/
 /*
@@ -153,10 +154,10 @@ public:
     //add other functions to handle bus transactions///
     //******///
     
-    bool busUpd(ulong, std::vector<Cache*> &);
-    bool busRd(ulong, std::vector<Cache*> &);
-    bool busUpd(ulong);
-    bool busRd(ulong);
+   //bool busUpd(ulong, std::vector<Cache*> &);
+   //bool busRd(ulong, std::vector<Cache*> &);
+   //bool busUpd(ulong);
+   //bool busRd(ulong);
     
 };
 

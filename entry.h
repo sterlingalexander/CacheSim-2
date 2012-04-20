@@ -8,6 +8,7 @@
 using namespace std;
 
 extern int DEBUG;
+extern int NODES;
 
 typedef unsigned long ulong;
 typedef unsigned char uchar;
@@ -44,8 +45,9 @@ class entry  {
         void offTwo()                 { processor[2] = 0; }
         void onThree()                { processor[3] = 1; }
         void offThree()               { processor[3] = 0; }
+        bool isInProcCache(int pn)    { if (processor[pn] == 1) return true;  else return false; }
         void processorOn(int p)       { processor[p] = 1; }
-        void processorOff(int p)      { processor[p] = 0; }      
+        void processorOff(int p)      { processor[p] = 0; if (!isInSomeCache()) clearAll(); }      
         void setTag(ulong addr)       { tag = addr; }
         ulong getTag()                { return tag; }
         void setState(int pstate)     { state = pstate; }
@@ -53,6 +55,11 @@ class entry  {
         bool isDirty()                { return dirty; }
         void setDirty()               { dirty = true; }
         void setClean()               { dirty = false; }
+        bool isInSomeCache()          { for (int i = 0; i < NODES; ++i)  {
+                                           if (processor[i] == 1)  return true;
+                                        }
+                                        return false;
+                                      }
 
         ulong tag;
         int processor[4];
