@@ -13,7 +13,7 @@
 using namespace std;
 
 
-Cache::Cache(int s, int a, int b, int p) {
+Cache::Cache(int s, int a, int b) {
     ulong i, j;
 
     reads = readMisses = writes = 0;
@@ -27,7 +27,6 @@ Cache::Cache(int s, int a, int b, int p) {
     numLines = (ulong) (s / b);
     log2Sets = (ulong) (log2(sets));
     log2Blk = (ulong) (log2(b));
-    protocol = (ulong) (p);
 
     //*******************//
     //initialize your counters here//
@@ -53,7 +52,7 @@ Cache::Cache(int s, int a, int b, int p) {
 /**you might add other parameters to Access()
 since this function is an entry point
 to the memory hierarchy (i.e. caches)**/
-void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory dir, int proc_num) {
+void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory &dir, int proc_num) {
    currentCycle++; /*per cache global counter to maintain LRU order
                         among cache ways, updated on every cache access*/
 
