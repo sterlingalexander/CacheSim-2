@@ -72,7 +72,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             dir.position[insert_pos].setStateEM();             // set directory to EXCLUSIVE_MODIFIED state
             cacheLine *newline = fillLine(addr);               // put line in cache
             newline->setFlags(EXCLUSIVE);                      // set cache state to EXCLUSIVE
-            memoryTransactions++;                              // STATS:  record memory transaction
+            ++memoryTransactions;                              // STATS:  record memory transaction
          }
          else  {                          // Case:  cache miss, directory hit (read)
             dir.position[index].processorOn(proc_num);   // turn on this processor in directory
@@ -108,7 +108,8 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                   cacheLine *invalid_line = cachesArray[i]->findLine(addr);
                   if (invalid_line != NULL)  {
                      invalid_line->setFlags(INVALID);
-                     ++invalidations;
+                     cachesArray[i].recordInvalidation();   // record invalidation in proper cache
+                     //++invalidations;
                   }
                   dir.position[index].processorOff(i);      // turn off invalid pocessor bits
                }

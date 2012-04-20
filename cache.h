@@ -121,6 +121,7 @@ public:
     cacheLine *fillLine(ulong addr);
     cacheLine *findLine(ulong addr);
     cacheLine *getLRU(ulong);
+    void recordInvalidation()          { ++invalidations; }
 
     ulong getRM() {
         return readMisses;
