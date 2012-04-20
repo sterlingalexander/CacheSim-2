@@ -16,7 +16,7 @@ using namespace std;
 Cache::Cache(int s, int a, int b) {
     ulong i, j;
 
-    reads = readMisses = writes = 0;
+    reads = readMisses = writes = invalidations = 0;
     writeMisses = writeBacks = currentCycle = 0;
     memoryTransactions = cacheToCacheTransfers = 0;
 
@@ -107,6 +107,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                   cacheLine *invalid_line = cachesArray[i]->findLine(addr);
                   if (invalid_line != NULL)  {
                      invalid_line->setFlags(INVALID);
+                     ++invalidations;
                   }
                   dir.position[index].processorOff(i);      // turn off invalid pocessor bits
                }
@@ -141,6 +142,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                      cacheLine *line_invalid = cachesArray[i]->findLine(addr);
                      if (line_invalid != NULL)  {
                         line_invalid->setFlags(INVALID);
+                        ++invalidations;
                      }
                      dir.position[index].processorOff(i);      // set processor bits to zero
                   }
@@ -252,7 +254,7 @@ void Cache::printStats() {
     printf("04. number of write misses:                       %li\n", writeMisses);
     printf("05. total miss rate:                              %f\n", (writeMisses + readMisses + 0.0) / (reads + writes));
     printf("06. number of writebacks:                         %li\n", writeBacks);
-    printf("07. number of memory transactions:                %li\n", memoryTransactions);
+    printf("07. number of invalidations:                      %li\n", invalidations);
     printf("08. number of cache to cache transfers:           %li\n", cacheToCacheTransfers);
 }
 
