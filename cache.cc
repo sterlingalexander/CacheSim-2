@@ -108,7 +108,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                   cacheLine *invalid_line = cachesArray[i]->findLine(addr);
                   if (invalid_line != NULL)  {
                      invalid_line->setFlags(INVALID);
-                     cachesArray[i].recordInvalidation();   // record invalidation in proper cache
+                     cachesArray[i]->recordInvalidation();   // record invalidation in proper cache
                      //++invalidations;
                   }
                   dir.position[index].processorOff(i);      // turn off invalid pocessor bits
@@ -144,7 +144,8 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                      cacheLine *line_invalid = cachesArray[i]->findLine(addr);
                      if (line_invalid != NULL)  {
                         line_invalid->setFlags(INVALID);
-                        ++invalidations;
+                        cachesArray[i]->recordInvalidation();   // record invalidation in proper cache
+                        //++invalidations;
                      }
                      dir.position[index].processorOff(i);      // set processor bits to zero
                   }
