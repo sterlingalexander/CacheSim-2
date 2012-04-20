@@ -82,7 +82,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                if (dir.position[index].isInProcCache(i))  {  // change all to SHARED state except this one
                   cacheLine *shared_line = cachesArray[i]->findLine(addr);
                   if (shared_line != NULL)  {
-                     shared_line->setState(SHARED);
+                     shared_line->setFlags(SHARED);
                   }
                }
             }
@@ -136,7 +136,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             else  {                          // Shared cache line
                for (int i = 0; i < NODES; ++i)  {        // set lines in other processors to INVALID
                   if (proc_num != i && dir.position[index].isInProcCache(i))  {
-                     cacheLine *line_invalid = cachesArray[i].findLine(addr);
+                     cacheLine *line_invalid = cachesArray[i]->findLine(addr);
                      if (line_invalid != NULL)  {
                         line_invalid->setFlags(INVALID);
                      }
@@ -288,7 +288,7 @@ cacheLine *Cache::fillLine(ulong addr) {
 
     cacheLine *victim = findLineToReplace(addr);
     assert(victim != 0);
-    if (victim->getFlags() == MODIFIED || victim->getFlags() == SHARED_MODIFIED) {
+    if (victim->getFlags() == MODIFIED) {
         writeBack(addr);
     }
 
