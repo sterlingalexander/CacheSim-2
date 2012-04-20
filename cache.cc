@@ -87,6 +87,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                   }
                }
             }
+            ++cacheToCacheTransfers;
          }
       }
       else  {                    // WRITE request
@@ -118,7 +119,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             dir.position[index].setDirty();                 // set dirty bit on
             cacheLine *newline = fillLine(addr);            // fill cache line
             newline->setFlags(MODIFIED);                    // set cache flag
-            ++memoryTransactions;                           // STATS:  record memory transaction
+            ++cacheToCacheTransfers;                        // STATS:  record inter-cache transfers
          }
       }
    }
