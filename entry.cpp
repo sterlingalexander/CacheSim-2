@@ -6,7 +6,7 @@
 
 using namespace std;
 
-
+// Nothing to see here but an overloaded operator.  Most functions are inline in header
 ostream &operator<<(ostream &stream, entry obj)  { 
       
       stream << obj.tag << ", "; 

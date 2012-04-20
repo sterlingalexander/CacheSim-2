@@ -16,7 +16,7 @@
 typedef unsigned long ulong;
 typedef unsigned char uchar;
 typedef unsigned int uint;
-extern int NODES;
+extern int NODES;                   // global from main
 
 /****add new states, based on the protocol****/
 /*

@@ -6,30 +6,31 @@
 extern int DEBUG;
 extern int DIRECTORY_SIZE;
 
+// Constructor
 directory::directory(int size) {
     
-   position = new entry[size];
-   for (int i = 0; i < size; i++) {
-      // position[i] = new entry;
-      //position[i] = new entry();
-      position[i].clearAll();
-      if (DEBUG) cout << "Constructed position[" << i << "]\n";
-      if (DEBUG) cout << position[i];
+   position = new entry[size];         // create array of entries
+   for (int i = 0; i < size; i++) {    
+      position[i].clearAll();          // initalize all directory positions
+      if (DEBUG) cout << "Constructed position[" << i << "]\n";      // debug output for small traces
+      if (DEBUG) cout << position[i];                                // debug output for small traces
    }
 }
 
+// returns index of the found tag, returns -1 if tag is not in directory
 int directory::findTagPos(ulong addr)  {
    
-   for (int i = 0; i < DIRECTORY_SIZE; i++)  {
+   for (int i = 0; i < DIRECTORY_SIZE; i++)  {  // linear traversal search...quick but inefficient
       if (position[i].tag == addr)
          return i;
    }
    return -1;
 }
  
+ // returns index of first unowned position, returns -1 if directory is full
 int directory::findUnownedPos()  {
    
-   for (int i = 0; i < DIRECTORY_SIZE; i++)  {
+   for (int i = 0; i < DIRECTORY_SIZE; i++)  {  // linear traversal search...quick but inefficient
       if (position[i].isU())
          return i;
    }

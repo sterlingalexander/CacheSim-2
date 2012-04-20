@@ -62,26 +62,27 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
    cacheLine *line = findLine(addr);
     
    if (line == NULL || line->getFlags() == INVALID)  {     // --=== THESE ARE CACHE MISSES ===--
-      int index = dir.findTagPos(addr);
+      int index = dir.findTagPos(addr);      // search directory for index of tag (-1 denotes not found)
       if (op == 'r')  {                // READ request
-         if (index < 0)  {              // Case:  cache miss, directory miss (read)
-            int insert_pos = dir.findUnownedPos();
-            dir.position[insert_pos].setTag(addr);
-            dir.position[insert_pos].processorOn(proc_num);
-            dir.position[insert_pos].setStateEM();
-            cacheLine *newline = fillLine(addr);
-            newline->setFlags(EXCLUSIVE);
-            memoryTransactions++;
+         ++readMisses;                 // STATS:  record read miss
+         if (index < 0)  {             // Case:  cache miss, directory miss (read)
+            int insert_pos = dir.findUnownedPos();             // find first open directory position
+            dir.position[insert_pos].setTag(addr);             // set directory tag
+            dir.position[insert_pos].processorOn(proc_num);    // turn this processor bit on
+            dir.position[insert_pos].setStateEM();             // set directory to EXCLUSIVE_MODIFIED state
+            cacheLine *newline = fillLine(addr);               // put line in cache
+            newline->setFlags(EXCLUSIVE);                      // set cache state to EXCLUSIVE
+            memoryTransactions++;                              // STATS:  record memory transaction
          }
          else  {                          // Case:  cache miss, directory hit (read)
-            dir.position[index].processorOn(proc_num);    // turn on this processor in directory
-            dir.position[index].setStateS();         // set directory to SHARED state
-            cacheLine *newline = fillLine(addr);   // put memory in cache
-            newline->setFlags(SHARED);             // set cache flag to SHARED
-            for (int i = 0; i < NODES; ++i)  {         // loop through processors in FBV
-               if (dir.position[index].isInProcCache(i))  {  // change all to SHARED state except this one
+            dir.position[index].processorOn(proc_num);   // turn on this processor in directory
+            dir.position[index].setStateS();             // set directory to SHARED state
+            cacheLine *newline = fillLine(addr);         // put line in cache
+            newline->setFlags(SHARED);                   // set cache state to SHARED
+            for (int i = 0; i < NODES; ++i)  {           // loop through processors in directory
+               if (dir.position[index].isInProcCache(i))  {  // change all in directory to SHARED state 
                   cacheLine *shared_line = cachesArray[i]->findLine(addr);
-                  if (shared_line != NULL)  {
+                  if (shared_line != NULL)  {            // NULL pointer protection
                      shared_line->setFlags(SHARED);
                   }
                }
@@ -89,33 +90,34 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
          }
       }
       else  {                    // WRITE request
+         ++writeMisses;          // STATS:  record write miss
          if (index < 0)  {       // Case:  cache miss, directory miss (write)
-            int insert_pos = dir.findUnownedPos();
-            dir.position[insert_pos].setTag(addr);
-            dir.position[insert_pos].processorOn(proc_num);
-            dir.position[insert_pos].setStateEM();
-            dir.position[insert_pos].setDirty();
-            cacheLine *newline = fillLine(addr);
-            newline->setFlags(MODIFIED);
-            ++memoryTransactions;
+            int insert_pos = dir.findUnownedPos();             // find first open directory position
+            dir.position[insert_pos].setTag(addr);             // set directory tag
+            dir.position[insert_pos].processorOn(proc_num);    // turn on this processor bit
+            dir.position[insert_pos].setStateEM();             // set directory state to EXCLUSIVE_MODIFIED
+            dir.position[insert_pos].setDirty();               // set dirty bit on
+            cacheLine *newline = fillLine(addr);               // put line in cache
+            newline->setFlags(MODIFIED);                       // set cache state to modified
+            ++memoryTransactions;                              // STATS:  record memory transaction
          }
          else  {                 // Case:  cache miss, directory hit (write)
-            for (int i = 0; i < NODES; ++i)  {        // set lines in other processors to INVALID
+            for (int i = 0; i < NODES; ++i)  {        // INVALIDate all other processor cache entries
                if (dir.position[index].isInProcCache(i))  {
                   cacheLine *invalid_line = cachesArray[i]->findLine(addr);
                   if (invalid_line != NULL)  {
                      invalid_line->setFlags(INVALID);
                   }
-                  dir.position[index].processorOff(i);          // set processor bit to zero
+                  dir.position[index].processorOff(i);      // turn off invalid pocessor bits
                }
             }
-            dir.position[index].setTag(addr);                   // set DIRECTORY tag
-            dir.position[index].processorOn(proc_num);          // set DIRECTORY processor bit
-            dir.position[index].setStateEM();                  // set DIRECTORY state
-            dir.position[index].setDirty();                     // set DIRECTORY entry as dirty
+            dir.position[index].setTag(addr);               // set directory tag
+            dir.position[index].processorOn(proc_num);      // turn on this processor bit
+            dir.position[index].setStateEM();               // set directory state to EXCLUSIVE_MODIFIED
+            dir.position[index].setDirty();                 // set dirty bit on
             cacheLine *newline = fillLine(addr);            // fill cache line
             newline->setFlags(MODIFIED);                    // set cache flag
-            ++memoryTransactions;                           // count memory transaction
+            ++memoryTransactions;                           // STATS:  record memory transaction
          }
       }
    }
@@ -140,81 +142,18 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                      if (line_invalid != NULL)  {
                         line_invalid->setFlags(INVALID);
                      }
-                     dir.position[index].processorOff(i);          // set processor bit to zero
+                     dir.position[index].processorOff(i);      // set processor bits to zero
                   }
                }
-               dir.position[index].setStateEM();
-               dir.position[index].setDirty();
-               line->setFlags(MODIFIED);
+               dir.position[index].setStateEM();               // set directory to EXCLUSIVE_MODIFIED
+               dir.position[index].setDirty();                 // set dirty bit
+               line->setFlags(MODIFIED);                       // set cache to MODIFIED state
             }
          }
       }
    }
 }
-    
-/*
-    bool snoop = false;
-    if (line == NULL || line->getFlags() == INVALID) { //miss
-        cacheLine *newline = fillLine(addr);
 
-        if (op == 'w') {
-            snoop = busRd(addr, cachesArray);
-            if (snoop) {
-                busUpd(addr, cachesArray);
-                if (protocol == 0) {
-                    newline->setFlags(SHARED_CLEAN);
-                    memoryTransactions++;
-                } else {
-                    newline->setFlags(SHARED_MODIFIED);
-                }
-                cacheToCacheTransfers++;
-            } else {
-                newline->setFlags(MODIFIED);
-                memoryTransactions++;
-            }
-            writeMisses++;
-        } else {
-            snoop = busRd(addr, cachesArray);
-            if (snoop) {
-                newline->setFlags(SHARED_CLEAN);
-                cacheToCacheTransfers++;
-            } else {
-                newline->setFlags(EXCLUSIVE);
-                memoryTransactions++;
-            }
-            readMisses++;
-        }
-    } else {
-        //since it's a hit, update LRU and update dirty flag
-        updateLRU(line);
-
-        if (op == 'w') {
-            if (line->getFlags() == EXCLUSIVE) {
-                line->setFlags(MODIFIED);
-            } else if (line->getFlags() != MODIFIED) {
-                if (protocol == 0) {
-                    line->setFlags(INVALID);
-                    snoop = busUpd(addr, cachesArray);
-                    if (snoop) {
-                        line->setFlags(SHARED_CLEAN);
-                    } else {
-                        line->setFlags(EXCLUSIVE);
-                    }
-                    memoryTransactions++;
-                } else {
-                    line->setFlags(INVALID);
-                    snoop = busUpd(addr, cachesArray);
-                    if (snoop) {
-                        line->setFlags(SHARED_MODIFIED);
-                    } else {
-                        line->setFlags(MODIFIED);
-                    }
-                }
-            }
-        }
-    }
-}
-*/
 
 /*look up line*/
 cacheLine *Cache::findLine(ulong addr) {
@@ -317,6 +256,70 @@ void Cache::printStats() {
     printf("08. number of cache to cache transfers:           %li\n", cacheToCacheTransfers);
 }
 
+    
+/*
+    bool snoop = false;
+    if (line == NULL || line->getFlags() == INVALID) { //miss
+        cacheLine *newline = fillLine(addr);
+
+        if (op == 'w') {
+            snoop = busRd(addr, cachesArray);
+            if (snoop) {
+                busUpd(addr, cachesArray);
+                if (protocol == 0) {
+                    newline->setFlags(SHARED_CLEAN);
+                    memoryTransactions++;
+                } else {
+                    newline->setFlags(SHARED_MODIFIED);
+                }
+                cacheToCacheTransfers++;
+            } else {
+                newline->setFlags(MODIFIED);
+                memoryTransactions++;
+            }
+            writeMisses++;
+        } else {
+            snoop = busRd(addr, cachesArray);
+            if (snoop) {
+                newline->setFlags(SHARED_CLEAN);
+                cacheToCacheTransfers++;
+            } else {
+                newline->setFlags(EXCLUSIVE);
+                memoryTransactions++;
+            }
+            readMisses++;
+        }
+    } else {
+        //since it's a hit, update LRU and update dirty flag
+        updateLRU(line);
+
+        if (op == 'w') {
+            if (line->getFlags() == EXCLUSIVE) {
+                line->setFlags(MODIFIED);
+            } else if (line->getFlags() != MODIFIED) {
+                if (protocol == 0) {
+                    line->setFlags(INVALID);
+                    snoop = busUpd(addr, cachesArray);
+                    if (snoop) {
+                        line->setFlags(SHARED_CLEAN);
+                    } else {
+                        line->setFlags(EXCLUSIVE);
+                    }
+                    memoryTransactions++;
+                } else {
+                    line->setFlags(INVALID);
+                    snoop = busUpd(addr, cachesArray);
+                    if (snoop) {
+                        line->setFlags(SHARED_MODIFIED);
+                    } else {
+                        line->setFlags(MODIFIED);
+                    }
+                }
+            }
+        }
+    }
+}
+*/
 
 /*
 bool Cache::busUpd(ulong addr, std::vector<Cache*> &cachesArray) {

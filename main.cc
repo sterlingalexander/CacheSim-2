@@ -16,9 +16,11 @@
 using namespace std;
 
 #include "cache.h"
-int DEBUG = 0;
-int NODES = 4;
-int DIRECTORY_SIZE = 0;
+
+// Globals
+int DEBUG = 0;             // for short traces, produces some debug output when set to 1
+int NODES = 4;             // number of nodes, static for assignment
+int DIRECTORY_SIZE = 0;    // global for directory size, I think it's used as extern somewhere else
 
 int main(int argc, char *argv[]) {
 
@@ -55,7 +57,8 @@ int main(int argc, char *argv[]) {
    //int protocol   = atoi(argv[5]);	 /*0: Firefly, 1:Dragon*/
    char *fname = (char *) malloc(20);
    fname = argv[4];
-   DIRECTORY_SIZE = cache_size * NODES / blk_size;
+   DIRECTORY_SIZE = cache_size * NODES / blk_size;       // set size of the directory
+   if (DEBUG) cout << "Directory size set to " << DIRECTORY_SIZE << " possible entries\n";
 
     //****************************************************//
     //**printf("===== Simulator configuration =====\n");**//
@@ -83,8 +86,8 @@ int main(int argc, char *argv[]) {
     //*********************************************//
     //*****create an array of caches here**********//
     //*********************************************//	
-   directory dir(DIRECTORY_SIZE);
-   vector<Cache*> cachesArray;
+   directory dir(DIRECTORY_SIZE);      // create directory
+   vector<Cache*> cachesArray;         // create cache array
     
    for (int i = 0; i < NODES; i++) {
       cachesArray.push_back(new Cache(cache_size, cache_assoc, blk_size));

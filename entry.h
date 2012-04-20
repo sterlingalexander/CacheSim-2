@@ -24,11 +24,12 @@ class entry  {
    
    public:
 
-      entry()  {   }
-      ~entry()   {   }
+      entry()  {   }       // Default constructor
+      ~entry()   {   }     // Default destructor
        
       friend ostream &operator<<(ostream &stream, entry obj);
          
+      // initialize directory line to empty state
       void clearAll()   {  tag = 0; state = UNOWNED; dirty = false;
                            for (int i = 0; i < 4; i++)  processor[i] = 0;
                            if (DEBUG)  {
@@ -38,6 +39,8 @@ class entry  {
                               cout << "\n";
                            }
                         }
+        
+        // Self-explanatory getters and setters
         void setStateEM()             { state = EXCLUSIVE_MODIFIED; }
         void setStateS()              { state = SHARED; }
         bool isEM()                   { if (state == EXCLUSIVE_MODIFIED) return true;  else return false; }
@@ -45,7 +48,7 @@ class entry  {
         bool isU()                    { if (state == UNOWNED) return true; else return false; }
         bool isInProcCache(int pn)    { if (processor[pn] == 1) return true;  else return false; }
         void processorOn(int p)       { processor[p] = 1; }
-        void processorOff(int p)      { processor[p] = 0; if (!isInSomeCache()) clearAll(); }      
+        void processorOff(int p)      { processor[p] = 0; if (tagNoLongerCached()) clearAll(); }      
         void setTag(ulong addr)       { tag = addr; }
         ulong getTag()                { return tag; }
         void setState(int pstate)     { state = pstate; }
@@ -53,10 +56,10 @@ class entry  {
         bool isDirty()                { return dirty; }
         void setDirty()               { dirty = true; }
         void setClean()               { dirty = false; }
-        bool isInSomeCache()          { for (int i = 0; i < NODES; ++i)  {
-                                           if (processor[i] == 1)  return true;
+        bool tagNoLongerCached()      { for (int i = 0; i < NODES; ++i)  {
+                                           if (processor[i] == 1)  return false;
                                         }
-                                        return false;
+                                        return true;
                                       }
 
         ulong tag;
