@@ -40,6 +40,9 @@ class entry  {
                         }
         void setStateEM()             { state = EXCLUSIVE_MODIFIED; }
         void setStateS()              { state = SHARED; }
+        bool isEM()                   { if (state == EXCLUSIVE_MODIFIED) return true;  else return false; }
+        bool isS()                    { if (state == SHARED) return true;  else return false; }
+        bool is U()                   { if (state == UNOWNED) return true; else return false; }
         bool isInProcCache(int pn)    { if (processor[pn] == 1) return true;  else return false; }
         void processorOn(int p)       { processor[p] = 1; }
         void processorOff(int p)      { processor[p] = 0; if (!isInSomeCache()) clearAll(); }      

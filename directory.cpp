@@ -21,7 +21,7 @@ directory::directory(int size) {
 int findTagPos(ulong addr)  {
    
    for (int i = 0; i < DIRECTORY_SIZE; i++)  {
-      if (position[i].tag == addr)
+      if (this.position[i].tag == addr)
          return i;
    }
    return -1;
@@ -30,7 +30,7 @@ int findTagPos(ulong addr)  {
 int findUnownedPos()  {
    
    for (int i = 0; i < DIRECTORY_SIZE; i++)  {
-      if (position[i].state == UNOWNED)
+      if (this.position[i].isU())
          return i;
    }
    return -1;
