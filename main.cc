@@ -16,6 +16,7 @@
 using namespace std;
 
 #include "cache.h"
+int DEBUG = 0;
 int NODES = 4;
 int DIRECTORY_SIZE = 0;
 
