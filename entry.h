@@ -14,13 +14,14 @@ typedef unsigned long ulong;
 typedef unsigned char uchar;
 typedef unsigned int uint;
 
-enum {
+class entry  {
+
+   enum {
    EXCLUSIVE_MODIFIED = 0,
    SHARED,
    UNOWNED
-};
-
-class entry  {
+   };
+   
    public:
 
       entry()  {   }
