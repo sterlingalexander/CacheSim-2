@@ -68,14 +68,14 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             int insert_pos = dir.findUnownedPos();
             dir.position[insert_pos].setTag(addr);
             dir.position[insert_pos].processorOn(proc_num);
-            dir.position[insert_pos].setState(EXCLUSIVE_MODIFIED);
+            dir.position[insert_pos].setStateEM();
             cacheLine *newline = fillLine(addr);
             newline->setFlags(EXCLUSIVE);
             memoryTransactions++;
          }
          else  {                          // Case:  cache miss, directory hit (read)
             dir.position[index].processorOn(proc_num);    // turn on this processor in directory
-            dir.position[index].setState(SHARED);         // set directory to SHARED state
+            dir.position[index].setStateS();         // set directory to SHARED state
             cacheLine *newline = fillLine(addr);   // put memory in cache
             newline->setFlags(SHARED);             // set cache flag to SHARED
             for (int i = 0; i < NODES; ++i)  {         // loop through processors in FBV
@@ -93,7 +93,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             int insert_pos = dir.findUnownedPos();
             dir.position[insert_pos].setTag(addr);
             dir.position[insert_pos].processorOn(proc_num);
-            dir.position[insert_pos].setState(EXCLUSIVE_MODIFIED);
+            dir.position[insert_pos].setStateEM();
             dir.position[insert_pos].setDirty();
             cacheLine *newline = fillLine(addr);
             newline->setFlags(MODIFIED);
@@ -111,7 +111,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             }
             dir.position[index].setTag(addr);                   // set DIRECTORY tag
             dir.position[index].processorOn(proc_num);          // set DIRECTORY processor bit
-            dir.position[index].setState(EXCLUSIVE_MODIFIED);   // set DIRECTORY state
+            dir.position[index].setStateEM();                  // set DIRECTORY state
             dir.position[index].setDirty();                     // set DIRECTORY entry as dirty
             cacheLine *newline = fillLine(addr);            // fill cache line
             newline->setFlags(MODIFIED);                    // set cache flag
@@ -143,7 +143,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                      dir.position[index].processorOff(i);          // set processor bit to zero
                   }
                }
-               dir.position[index].setState(EXCLUSIVE_MODIFIED);
+               dir.position[index].setStateEM();
                dir.position[index].setDirty();
                line->setFlags(MODIFIED);
             }
