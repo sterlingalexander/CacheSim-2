@@ -18,19 +18,19 @@ directory::directory(int size) {
    }
 }
 
-int findTagPos(ulong addr)  {
+int directory::findTagPos(ulong addr)  {
    
    for (int i = 0; i < DIRECTORY_SIZE; i++)  {
-      if (this->position[i].tag == addr)
+      if (position[i].tag == addr)
          return i;
    }
    return -1;
 }
  
-int findUnownedPos()  {
+int directory::findUnownedPos()  {
    
    for (int i = 0; i < DIRECTORY_SIZE; i++)  {
-      if (this->position[i].isU())
+      if (position[i].isU())
          return i;
    }
    return -1;
