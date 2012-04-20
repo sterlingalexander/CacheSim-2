@@ -80,7 +80,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             newline->setFlags(SHARED);             // set cache flag to SHARED
             for (int i = 0; i < NODES; ++i)  {         // loop through processors in FBV
                if (dir.position[index].isInProcCache(i))  {  // change all to SHARED state except this one
-                  cacheLine *shared_line = cachesArray[i].findLine(addr);
+                  cacheLine *shared_line = cachesArray[i]->findLine(addr);
                   if (shared_line != NULL)  {
                      shared_line->setState(SHARED);
                   }
@@ -100,9 +100,9 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             ++memoryTransactions;
          }
          else  {                 // Case:  cache miss, directory hit (write)
-            for (int i = 0, i < NODES; ++i)  {        // set lines in other processors to INVALID
+            for (int i = 0; i < NODES; ++i)  {        // set lines in other processors to INVALID
                if (dir.position[index].isInProcCache(i))  {
-                  cacheLine *invalid_line = cachesArray[i].findLine(addr);
+                  cacheLine *invalid_line = cachesArray[i]->findLine(addr);
                   if (invalid_line != NULL)  {
                      invalid_line->setFlags(INVALID);
                   }
@@ -135,7 +135,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             }
             else  {                          // Shared cache line
                for (int i = 0; i < NODES; ++i)  {        // set lines in other processors to INVALID
-                  if proc_num != i && dir.position[index].isInProcCache(i))  {
+                  if (proc_num != i && dir.position[index].isInProcCache(i))  {
                      cacheLine *line_invalid = cachesArray[i].findLine(addr);
                      if (line_invalid != NULL)  {
                         line_invalid->setFlags(INVALID);

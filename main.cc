@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
    ulong address;
 
    while (fscanf(pFile, "%i %c %lx", &processor_number, &op, &address) == 3) {
-      cachesArray[processor_number]->Access(address, op, cachesArray, directory, processor_number);
+      cachesArray[processor_number]->Access(address, op, cachesArray, dir, processor_number);
    }
     
     
