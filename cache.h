@@ -11,6 +11,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include "directory.h"
 
 typedef unsigned long ulong;
 typedef unsigned char uchar;
