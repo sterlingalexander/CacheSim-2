@@ -111,7 +111,7 @@ protected:
 public:
     ulong currentCycle;
 
-    Cache(int, int, int, int);
+    Cache(int, int, int);
 
     ~Cache() {
         delete cache;
