@@ -132,7 +132,9 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
       }
       else  {                          // WRITE request
          if (index < 0)  {              // Case:  cache hit, directory miss (write)
-            cout << "THIS SHOULD PROBABLY NEVER HAPPEN\n\n";
+            //cout << "THIS SHOULD PROBABLY NEVER HAPPEN\n\n";
+            cacheLine *newline = findLine(addr);
+            newline->setFlags(MODIFIED);
          }
          else  {                          // Case:  cache hit, directory hit (write)
             if (line->getFlags() == EXCLUSIVE || line->getFlags() == MODIFIED)  {
