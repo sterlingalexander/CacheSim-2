@@ -102,9 +102,9 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
          else  {                 // Case:  cache miss, directory hit (write)
             for (int i = 0, i < NODES; ++i)  {        // set lines in other processors to INVALID
                if (dir.position[index].isInProcCache(i))  {
-                  cacheLine *invalid_line = cachesArray[i].findLIne(addr);
+                  cacheLine *invalid_line = cachesArray[i].findLine(addr);
                   if (invalid_line != NULL)  {
-                     invalid_line->setState(INVALID);
+                     invalid_line->setFlags(INVALID);
                   }
                   dir.position[index].processorOff(i);          // set processor bit to zero
                }
@@ -134,11 +134,11 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                line->setFlags(MODIFIED);           // silent E -> M transition
             }
             else  {                          // Shared cache line
-               for (int i = 0, i < NODES; ++i)  {        // set lines in other processors to INVALID
-                  if (num_proc != i && dir.position[index].isInProcCache(i))  {
-                     cacheLine *line_invalid = cachesArray[i].findLIne(addr);
+               for (int i = 0; i < NODES; ++i)  {        // set lines in other processors to INVALID
+                  if proc_num != i && dir.position[index].isInProcCache(i))  {
+                     cacheLine *line_invalid = cachesArray[i].findLine(addr);
                      if (line_invalid != NULL)  {
-                        line_invalid->setState(INVALID);
+                        line_invalid->setFlags(INVALID);
                      }
                      dir.position[index].processorOff(i);          // set processor bit to zero
                   }
@@ -213,8 +213,8 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             }
         }
     }
-*/
 }
+*/
 
 /*look up line*/
 cacheLine *Cache::findLine(ulong addr) {
