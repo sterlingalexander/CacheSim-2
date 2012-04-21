@@ -37,11 +37,10 @@ public:
     void clearAll() {
         tag = 0;
         state = UNOWNED;
-        dirty = false;
         for (int i = 0; i < NODES; i++) processor[i] = 0;
         if (DEBUG) {
             cout << "In the definition of entry, where we just created:\n";
-            cout << "\t\t" << tag << ", " << state << ", " << dirty << " , ";
+            cout << "\t\t" << tag << ", " << state << " , ";
             for (int i = 0; i < NODES; i++) cout << processor[i] << ", ";
             cout << "\n";
         }
@@ -98,18 +97,6 @@ public:
         return state;
     }
 
-    bool isDirty() {
-        return dirty;
-    }
-
-    void setDirty() {
-        dirty = true;
-    }
-
-    void setClean() {
-        dirty = false;
-    }
-
     bool tagNoLongerCached() {
         for (int i = 0; i < NODES; ++i) {
             if (processor[i] == 1) return false;
@@ -121,7 +108,6 @@ public:
     ulong tag;
     int processor[4];
     int state;
-    bool dirty;
 };
 
 #endif

@@ -23,7 +23,7 @@ directory::directory(int size) {
 int directory::findTagPos(ulong tag) {
 
     for (int i = 0; i < DIRECTORY_SIZE; i++) { // linear traversal search...quick but inefficient
-        if (position[i].tag == tag && !position[i].isU())
+        if (position[i].tag == tag) 
             return i;
     }
     return -1;
@@ -46,8 +46,7 @@ ostream &operator<<(ostream &stream, directory obj) {
         stream << obj.position[i].tag << ", ";
         stream << obj.position[i].state << ", ";
         stream << obj.position[i].processor[0] << ", " << obj.position[i].processor[1] << ", ";
-        stream << obj.position[i].processor[2] << ", " << obj.position[i].processor[3] << ", ";
-        stream << obj.position[i].dirty << "\n";
+        stream << obj.position[i].processor[2] << ", " << obj.position[i].processor[3] << "\n";
     }
     return stream; // return the stream 
 }

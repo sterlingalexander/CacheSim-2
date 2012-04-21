@@ -25,7 +25,6 @@ int main(int argc, char *argv[]) {
 
     directory dir(size);
     dir.position[5].onThree();
-    dir.position[5].dirty = true;
     cout << "\t==== Directory contents ====\n\n" << dir << "\n";
 
 }

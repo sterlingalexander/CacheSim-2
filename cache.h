@@ -21,16 +21,6 @@ extern int NODES; // global from main
 
 /****add new states, based on the protocol****/
 
-/*
-enum {
-    INVALID = 0,
-    EXCLUSIVE, // Also VALID-EXCLUSIVE
-    SHARED_CLEAN, // Also SHARED
-    SHARED_MODIFIED,
-    MODIFIED // Also DIRTY
-};
- */
-
 enum {
     EXCLUSIVE = 0,
     MODIFIED,
@@ -48,7 +38,7 @@ public:
 
     cacheLine() {
         tag = 0;
-        Flags = 0;
+        Flags = INVALID;
     }
 
     ulong getTag() {
@@ -89,7 +79,7 @@ class Cache {
 protected:
     ulong size, lineSize, assoc, sets, log2Sets, log2Blk, tagMask, numLines;
     ulong reads, readMisses, writes, writeMisses, writeBacks, invalidations;
-    ulong cacheToCacheTransfers;
+    ulong cacheToCacheTransfers, missingLines;
     ulong inCacheNotDirectory;
     ulong protocol;
 
