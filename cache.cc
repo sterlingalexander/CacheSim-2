@@ -18,7 +18,7 @@ Cache::Cache(int s, int a, int b) {
 
     reads = readMisses = writes = invalidations = 0;
     writeMisses = writeBacks = currentCycle = 0;
-    memoryTransactions = cacheToCacheTransfers = 0;
+    cacheToCacheTransfers = 0;
 
     size = (ulong) (s);
     assoc = (ulong) (a);
@@ -64,100 +64,89 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
    cacheLine *line = findLine(addr);
    tag = calcTag(addr);
  
-   if (line == NULL || line->getFlags() == INVALID)  {     // --=== THESE ARE CACHE MISSES ===--
-      int index = dir.findTagPos(tag);      // search directory for index of tag (-1 denotes not found)
-      if (op == 'r')  {                // READ request
-         ++readMisses;                 // STATS:  record read miss
-         if (index < 0)  {             // Case:  cache miss, directory miss (read)
-				cacheLine *newline = fillLine(addr, dir, proc_num);               // put line in cache            
-				int insert_pos = dir.findUnownedPos();             // find first open directory position
-            dir.position[insert_pos].setTag(tag);             // set directory tag
-            dir.position[insert_pos].processorOn(proc_num);    // turn this processor bit on
-            dir.position[insert_pos].setStateEM();             // set directory to EXCLUSIVE_MODIFIED state
-            newline->setFlags(EXCLUSIVE);                      // set cache state to EXCLUSIVE
-            ++memoryTransactions;                              // STATS:  record memory transaction
-         }
-         else  {                          // Case:  cache miss, directory hit (read)
-            cacheLine *newline = fillLine(addr, dir, proc_num);         // put line in cache
-				dir.position[index].setTag(tag);               // set directory tag
-				dir.position[index].processorOn(proc_num);   // turn on this processor in directory
-            dir.position[index].setStateS();             // set directory to SHARED state
-            ++cacheToCacheTransfers;                     // STATS:  record transfer from cache to cache
-            newline->setFlags(SHARED);                   // set cache state to SHARED
-            for (int i = 0; i < NODES; ++i)  {           // loop through processors in directory
-               if (dir.position[index].isInProcCache(i))  {  // change all in directory to SHARED state 
+   if (line == NULL || line->getFlags() == INVALID) {      // --=== THESE ARE CACHE MISSES ===--
+      int index = dir.findTagPos(tag); // search directory for index of tag (-1 denotes not found)
+      if (op == 'r') {                 // READ request
+         readMisses++;                 // STATS:  record read miss
+         if (index < 0) {              // Case:  cache miss, directory miss (read)
+				cacheLine *newline = fillLine(addr, dir, proc_num);   // put line in cache            
+				int insert_pos = dir.findUnownedPos();             	// find first open directory position
+            dir.position[insert_pos].setTag(tag);             		// set directory tag
+            dir.position[insert_pos].processorOn(proc_num);    	// turn this processor bit on
+            dir.position[insert_pos].setStateEM();             	// set directory to EXCLUSIVE_MODIFIED state
+            newline->setFlags(EXCLUSIVE);                      	// set cache state to EXCLUSIVE
+         } else {              						            		// Case:  cache miss, directory hit (read)
+            cacheLine *newline = fillLine(addr, dir, proc_num);   // put line in cache
+				dir.position[index].setTag(tag);               			// set directory tag
+				dir.position[index].processorOn(proc_num);   			// turn on this processor in directory
+            dir.position[index].setStateS();            				// set directory to SHARED state
+            newline->setFlags(SHARED);                   			// set cache state to SHARED
+				for (int i = 0; i < NODES; ++i) {            			// loop through processors in directory
+               if (proc_num != i && dir.position[index].isInProcCache(i)) {   // change all in directory to SHARED state 
                   cacheLine *shared_line = cachesArray[i]->findLine(addr);
-                  if (shared_line != NULL)  {            // NULL pointer protection
-                     shared_line->setFlags(SHARED);
+                  if (shared_line != NULL) {             			// NULL pointer protection
+							shared_line->setFlags(SHARED);
                   }
                }
             }
+				cacheToCacheTransfers++;                     			// STATS:  record transfer from cache to cache
          }
-      }
-      else  {                    // WRITE request
-         ++writeMisses;          // STATS:  record write miss
-         if (index < 0)  {       // Case:  cache miss, directory miss (write)
-            cacheLine *newline = fillLine(addr, dir, proc_num);               // put line in cache
-				int insert_pos = dir.findUnownedPos();             // find first open directory position
-            dir.position[insert_pos].setTag(tag);             // set directory tag
-            dir.position[insert_pos].processorOn(proc_num);    // turn on this processor bit
-            dir.position[insert_pos].setStateEM();             // set directory state to EXCLUSIVE_MODIFIED
-            dir.position[insert_pos].setDirty();               // set dirty bit on
-            newline->setFlags(MODIFIED);                       // set cache state to modified
-            ++memoryTransactions;                              // STATS:  record memory transaction
-         }
-         else  {                 // Case:  cache miss, directory hit (write)
-	         cacheLine *newline = fillLine(addr, dir, proc_num);            // fill cache line
-				dir.position[index].setTag(tag);               // set directory tag
-            dir.position[index].processorOn(proc_num);      // turn on this processor bit
-            dir.position[index].setStateEM();               // set directory state to EXCLUSIVE_MODIFIED
-            dir.position[index].setDirty();                 // set dirty bit on
-            newline->setFlags(MODIFIED);                    // set cache flag
-            ++cacheToCacheTransfers;                        // STATS:  record inter-cache transfers
-            for (int i = 0; i < NODES; ++i)  {        // INVALIDate all other processor cache entries
-               if (proc_num != i && dir.position[index].isInProcCache(i))  {
+      } else {                   // WRITE request
+         writeMisses++;          // STATS:  record write miss
+         if (index < 0) {        // Case:  cache miss, directory miss (write)
+            cacheLine *newline = fillLine(addr, dir, proc_num);	// put line in cache
+				int insert_pos = dir.findUnownedPos();             	// find first open directory position
+            dir.position[insert_pos].setTag(tag);             		// set directory tag
+            dir.position[insert_pos].processorOn(proc_num);    	// turn on this processor bit
+            dir.position[insert_pos].setStateEM();             	// set directory state to EXCLUSIVE_MODIFIED
+            dir.position[insert_pos].setDirty();               	// set dirty bit on
+            newline->setFlags(MODIFIED);                       	// set cache state to modified
+         } else {                 											// Case:  cache miss, directory hit (write)
+	         cacheLine *newline = fillLine(addr, dir, proc_num);   // fill cache line
+				dir.position[index].setTag(tag);               			// set directory tag
+            dir.position[index].processorOn(proc_num);      		// turn on this processor bit
+            dir.position[index].setStateEM();               		// set directory state to EXCLUSIVE_MODIFIED
+            dir.position[index].setDirty();                 		// set dirty bit on
+            newline->setFlags(MODIFIED);                    		// set cache flag
+            ++cacheToCacheTransfers;                        		// STATS:  record inter-cache transfers
+            for (int i = 0; i < NODES; i++) {         				// INVALIDate all other processor cache entries
+               if (proc_num != i && dir.position[index].isInProcCache(i)) {
                   cacheLine *invalid_line = cachesArray[i]->findLine(addr);
-                  if (invalid_line != NULL)  {
+                  if (invalid_line != NULL) {
                      invalid_line->invalidate();
-                     cachesArray[i]->recordInvalidation();  // record invalidation in proper cache
-                     //++invalidations;
+                     cachesArray[i]->recordInvalidation();  		// record invalidation in proper cache
                   }
-                  dir.position[index].processorOff(i);      // turn off invalid pocessor bits
+                  dir.position[index].processorOff(i);      		// turn off invalid pocessor bits
                }
             }
          }
       }
-   }
-   else  {                 // --=== THESE ARE CACHE HITS ===--
+   } else {                 				// --=== THESE ARE CACHE HITS ===--
       int index = dir.findTagPos(tag);
-      if (op == 'r')  {                // READ request
+      if (op == 'r') {                 // READ request
          // Reading from your own cache on a hit won't do anything (line already tested as valid)
          // Case:  cache hit (will never check directory)
-      }
-      else  {                          // WRITE request
-         if (index < 0)  {              // Case:  cache hit, directory miss (write)
+      } else {                       	// WRITE request
+         if (index < 0) {              // Case:  cache hit, directory miss (write)
             //cout << "THIS SHOULD PROBABLY NEVER HAPPEN\n\n";
             //dir.position[index].setTag(tag);               // set directory tag
-            //dir.position[index].processorOn(proc_num);      // turn on this processor bit
-            //dir.position[index].setStateEM();               // set directory state to EXCLUSIVE_MODIFIED
-            //dir.position[index].setDirty();                 // set dirty bit on
+            //dir.position[index].processorOn(proc_num);     // turn on this processor bit
+            //dir.position[index].setStateEM();              // set directory state to EXCLUSIVE_MODIFIED
+            //dir.position[index].setDirty();                // set dirty bit on
             if (DEBUG == 2) cout << "Current addr:  " << addr << endl;
             inCacheNotDirectory++;
             cacheLine *newline = findLine(addr);
             newline->setFlags(MODIFIED);
-         }
-         else  {                          // Case:  cache hit, directory hit (write)
-            if (line->getFlags() == EXCLUSIVE || line->getFlags() == MODIFIED)  {
+         } else {                          // Case:  cache hit, directory hit (write)
+            if (line->getFlags() == EXCLUSIVE || line->getFlags() == MODIFIED) {
                line->setFlags(MODIFIED);           // silent E -> M transition
-            }
-            else  {                          // Shared cache line
-               for (int i = 0; i < NODES; ++i)  {        // set lines in other processors to INVALID
-                  if (proc_num != i && dir.position[index].isInProcCache(i))  {
+            } else {                          // Shared cache line
+               for (int i = 0; i < NODES; i++) {        // set lines in other processors to INVALID
+                  if (proc_num != i && dir.position[index].isInProcCache(i)) {
                      cacheLine *line_invalid = cachesArray[i]->findLine(addr);
-                     if (line_invalid != NULL)  {
+                     if (line_invalid != NULL) {
                         line_invalid->invalidate();
                         cachesArray[i]->recordInvalidation();   // record invalidation in proper cache
-                        //++invalidations;
                      }
                      dir.position[index].processorOff(i);      // set processor bits to zero
                   }
@@ -235,7 +224,7 @@ cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
    ulong tag = calcTag(addr);
 
    cacheLine *victim = findLineToReplace(addr);
-   if (victim->getFlags() != INVALID)  {           // on cache eviction
+   if (victim->getFlags() != INVALID) {           // on cache eviction
       int index = dir.findTagPos(tag);            // find position in directory
       if (index >= 0)  {                            // if it is in directory
 		 dir.position[index].processorOff(pnum);   // turn off this processor bit

@@ -88,7 +88,7 @@ class Cache {
 protected:
     ulong size, lineSize, assoc, sets, log2Sets, log2Blk, tagMask, numLines;
     ulong reads, readMisses, writes, writeMisses, writeBacks, invalidations;
-    ulong memoryTransactions, cacheToCacheTransfers;
+    ulong cacheToCacheTransfers;
     ulong inCacheNotDirectory;
     ulong protocol;
 
@@ -147,7 +147,6 @@ public:
 
     void writeBack(ulong) {
         writeBacks++;
-        memoryTransactions++;
     }
     
     void Access(ulong, uchar, std::vector<Cache*> &, directory &, int);

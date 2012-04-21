@@ -1,3 +1,4 @@
 nbproject/*
 *.o
+*.out
 smp_cache*
