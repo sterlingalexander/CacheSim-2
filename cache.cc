@@ -80,22 +80,18 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                 newline->setFlags(EXCLUSIVE); // set cache state to EXCLUSIVE
             } else { // Case:  cache miss, directory hit (read)
                 cacheLine *newline = fillLine(addr, dir, proc_num); // put line in cache
-                bool wasCacheToCacheTranfer = false;
+                if (dir.position[index].isEM()) {
+					cacheToCacheTransfers++;
+				}
                 for (int i = 0; i < NODES; i++) { // loop through processors in directory
                     if (proc_num != i && dir.position[index].isInProcCache(i)) { // change all in directory to SHARED state 
                         cacheLine *shared_line = cachesArray[i]->findLine(addr);
                         if (shared_line != NULL) { // NULL pointer protection
-                            if (shared_line->getFlags() == EXCLUSIVE) {
-                                wasCacheToCacheTranfer = true;
-                            }
                             shared_line->setFlags(SHARED);
                         } else {
 							// missingLines++;
 						}
                     }
-                }
-                if (wasCacheToCacheTranfer) {
-                    cacheToCacheTransfers++; // STATS:  record transfer from cache to cache
                 }
 				dir.position[index].setTag(tag); // set directory tag
 				dir.position[index].processorOn(proc_num); // turn on this processor in directory
@@ -113,7 +109,10 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                 newline->setFlags(MODIFIED); // set cache state to modified
             } else { // Case:  cache miss, directory hit (write)
                 cacheLine *newline = fillLine(addr, dir, proc_num); // fill cache line
-                for (int i = 0; i < NODES; i++) { // INVALIDate all other processor cache entries
+                if (dir.position[index].isEM()) {
+					cacheToCacheTransfers++;
+				}
+				for (int i = 0; i < NODES; i++) { // INVALIDate all other processor cache entries
                     if (proc_num != i && dir.position[index].isInProcCache(i)) {
                         cacheLine *invalid_line = cachesArray[i]->findLine(addr);
                         if (invalid_line != NULL) {
@@ -125,7 +124,6 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                         dir.position[index].processorOff(i); // turn off invalid pocessor bits
                     }
                 }
-				cacheToCacheTransfers++; // STATS:  record inter-cache transfers
 				dir.position[index].setTag(tag); // set directory tag
 				dir.position[index].processorOn(proc_num); // turn on this processor bit
                 dir.position[index].setStateEM(); // set directory state to EXCLUSIVE_MODIFIED
