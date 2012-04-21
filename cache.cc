@@ -230,10 +230,10 @@ cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
    ulong tag;
 
    cacheLine *victim = findLineToReplace(addr);
-   if (victim->getFlags() != INVALID)  {
-      int index = dir.findTagPos(addr);
-      if (index > 0)  {
-         dir.position[index].processorOff(pnum);
+   if (victim->getFlags() != INVALID)  {           // on cache eviction
+      int index = dir.findTagPos(addr);            // find position in directory
+      if (index >= 0)  {                            // if it is in directory
+         dir.position[index].processorOff(pnum);   // turn off this processor bit
       }
    }
    assert(victim != 0);
