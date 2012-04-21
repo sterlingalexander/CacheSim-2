@@ -77,6 +77,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
          else  {                          // Case:  cache miss, directory hit (read)
             dir.position[index].processorOn(proc_num);   // turn on this processor in directory
             dir.position[index].setStateS();             // set directory to SHARED state
+            ++cacheToCacheTransfers;                     // STATS:  record transfer from cache to cache
             cacheLine *newline = fillLine(addr);         // put line in cache
             newline->setFlags(SHARED);                   // set cache state to SHARED
             for (int i = 0; i < NODES; ++i)  {           // loop through processors in directory
@@ -87,7 +88,6 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                   }
                }
             }
-            ++cacheToCacheTransfers;
          }
       }
       else  {                    // WRITE request
@@ -108,7 +108,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                   cacheLine *invalid_line = cachesArray[i]->findLine(addr);
                   if (invalid_line != NULL)  {
                      invalid_line->setFlags(INVALID);
-                     cachesArray[i]->recordInvalidation();   // record invalidation in proper cache
+                     cachesArray[i]->recordInvalidation();  // record invalidation in proper cache
                      //++invalidations;
                   }
                   dir.position[index].processorOff(i);      // turn off invalid pocessor bits

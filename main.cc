@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     //*******print out simulator configuration here*******//
     //****************************************************//
 
-   printf("===== 506 SMP Simulator Configuration =====\n");
+   printf("===== 506 DSM (MESI with Full-bit Vector Simulator Configuration =====\n");
    printf("L1_SIZE:               %i\n", cache_size);
    printf("L1_ASSOC:              %i\n", cache_assoc);
    printf("L1_BLOCKSIZE:          %i\n", blk_size);
