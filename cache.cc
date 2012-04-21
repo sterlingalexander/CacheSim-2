@@ -133,6 +133,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
       else  {                          // WRITE request
          if (index < 0)  {              // Case:  cache hit, directory miss (write)
             //cout << "THIS SHOULD PROBABLY NEVER HAPPEN\n\n";
+            inCacheNotDirectory++;
             cacheLine *newline = findLine(addr);
             newline->setFlags(MODIFIED);
          }
@@ -260,6 +261,7 @@ void Cache::printStats() {
     printf("06. number of writebacks:                         %li\n", writeBacks);
     printf("07. number of invalidations:                      %li\n", invalidations);
     printf("08. number of cache to cache transfers:           %li\n", cacheToCacheTransfers);
+    printf("09. in cache but not in a directory:              %li\n", inCacheNotDirectory);
 }
 
     

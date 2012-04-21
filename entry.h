@@ -59,7 +59,7 @@ class entry  {
         bool tagNoLongerCached()      { for (int i = 0; i < NODES; ++i)  {
                                            if (processor[i] == 1)  return false;
                                         }
-                                        cout << "Directory entry transitioning to Unowned\n";
+                                        if (DEBUG) cout << "Directory entry transitioning to Unowned\n";
                                         return true;
                                       }
 
