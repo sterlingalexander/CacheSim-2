@@ -17,7 +17,7 @@ Cache::Cache(int s, int a, int b) {
 
     reads = readMisses = writes = invalidations = 0;
     writeMisses = writeBacks = currentCycle = 0;
-    cacheToCacheTransfers = missingLines = 0;
+    cacheToCacheTransfers = inCacheNotDirectory = missingLines = 0;
 
     size = (ulong) (s);
     assoc = (ulong) (a);
@@ -90,7 +90,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                             }
                             shared_line->setFlags(SHARED);
                         } else {
-							missingLines++;
+							// missingLines++;
 						}
                     }
                 }
@@ -120,7 +120,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                             invalid_line->invalidate();
                             cachesArray[i]->recordInvalidation(); // record invalidation in proper cache
                         } else {
-							missingLines++;
+							// missingLines++;
 						}
                         dir.position[index].processorOff(i); // turn off invalid pocessor bits
                     }
@@ -157,7 +157,9 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                             if (line_invalid != NULL) {
                                 line_invalid->invalidate();
                                 cachesArray[i]->recordInvalidation(); // record invalidation in proper cache
-                            }
+                            } else {
+								// missingLines++;
+							}
                             dir.position[index].processorOff(i); // set processor bits to zero
                         }
                     }
@@ -233,8 +235,8 @@ cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
     ulong tag = calcTag(addr);
 
     cacheLine *victim = findLineToReplace(addr);
-    if (victim->getFlags() == INVALID) { // on cache eviction
-        int index = dir.findTagPos(tag); // find position in directory
+    if (victim->getFlags() != INVALID) { // on cache eviction
+        int index = dir.findTagPos(victim->getTag()); // find position in directory
         if (index >= 0) { // if it is in directory
             dir.position[index].processorOff(pnum); // turn off this processor bit
         }
@@ -267,5 +269,5 @@ void Cache::printStats() {
     printf("06. number of writebacks:                         %li\n", writeBacks);
     printf("07. number of invalidations:                      %li\n", invalidations);
     printf("08. number of cache to cache transfers:           %li\n", cacheToCacheTransfers);
-    printf("09. missing lines:              				  %li\n", missingLines);
+    // printf("09. missing lines:              				  %li\n", missingLines);
 }
