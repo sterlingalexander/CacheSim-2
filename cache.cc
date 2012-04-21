@@ -56,7 +56,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
    ulong tag;
 
    currentCycle++; /*per cache global counter to maintain LRU order
-                        among cache ways, updated on every cache access*/
+                     among cache ways, updated on every cache access*/
 
    if (op == 'w') { writes++; } 
    else { reads++; }
@@ -77,19 +77,24 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             newline->setFlags(EXCLUSIVE);                      	// set cache state to EXCLUSIVE
          } else {              						            		// Case:  cache miss, directory hit (read)
             cacheLine *newline = fillLine(addr, dir, proc_num);   // put line in cache
-				dir.position[index].setTag(tag);               			// set directory tag
 				dir.position[index].processorOn(proc_num);   			// turn on this processor in directory
             dir.position[index].setStateS();            				// set directory to SHARED state
             newline->setFlags(SHARED);                   			// set cache state to SHARED
+				bool wasCacheToCacheTranfer = false;
 				for (int i = 0; i < NODES; ++i) {            			// loop through processors in directory
                if (proc_num != i && dir.position[index].isInProcCache(i)) {   // change all in directory to SHARED state 
                   cacheLine *shared_line = cachesArray[i]->findLine(addr);
                   if (shared_line != NULL) {             			// NULL pointer protection
+							if (shared_line->getFlags() == EXCLUSIVE) {
+								wasCacheToCacheTranfer = true;
+							}
 							shared_line->setFlags(SHARED);
                   }
                }
             }
-				cacheToCacheTransfers++;                     			// STATS:  record transfer from cache to cache
+				if (wasCacheToCacheTranfer) {
+					cacheToCacheTransfers++;                     			// STATS:  record transfer from cache to cache
+				}
          }
       } else {                   // WRITE request
          writeMisses++;          // STATS:  record write miss
@@ -103,8 +108,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             newline->setFlags(MODIFIED);                       	// set cache state to modified
          } else {                 											// Case:  cache miss, directory hit (write)
 	         cacheLine *newline = fillLine(addr, dir, proc_num);   // fill cache line
-				dir.position[index].setTag(tag);               			// set directory tag
-            dir.position[index].processorOn(proc_num);      		// turn on this processor bit
+				dir.position[index].processorOn(proc_num);      		// turn on this processor bit
             dir.position[index].setStateEM();               		// set directory state to EXCLUSIVE_MODIFIED
             dir.position[index].setDirty();                 		// set dirty bit on
             newline->setFlags(MODIFIED);                    		// set cache flag
@@ -139,14 +143,14 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             newline->setFlags(MODIFIED);
          } else {                          // Case:  cache hit, directory hit (write)
             if (line->getFlags() == EXCLUSIVE || line->getFlags() == MODIFIED) {
-               line->setFlags(MODIFIED);           // silent E -> M transition
-            } else {                          // Shared cache line
-               for (int i = 0; i < NODES; i++) {        // set lines in other processors to INVALID
+               line->setFlags(MODIFIED);           		// silent E -> M transition
+            } else {                          				// Shared cache line
+               for (int i = 0; i < NODES; i++) {        	// set lines in other processors to INVALID
                   if (proc_num != i && dir.position[index].isInProcCache(i)) {
                      cacheLine *line_invalid = cachesArray[i]->findLine(addr);
                      if (line_invalid != NULL) {
                         line_invalid->invalidate();
-                        cachesArray[i]->recordInvalidation();   // record invalidation in proper cache
+                        cachesArray[i]->recordInvalidation();  // record invalidation in proper cache
                      }
                      dir.position[index].processorOff(i);      // set processor bits to zero
                   }
@@ -224,15 +228,15 @@ cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
    ulong tag = calcTag(addr);
 
    cacheLine *victim = findLineToReplace(addr);
-   if (victim->getFlags() != INVALID) {           // on cache eviction
-      int index = dir.findTagPos(tag);            // find position in directory
-      if (index >= 0)  {                            // if it is in directory
-		 dir.position[index].processorOff(pnum);   // turn off this processor bit
+   if (victim->getFlags() != INVALID) {           	// on cache eviction
+      int index = dir.findTagPos(tag);            	// find position in directory
+      if (index >= 0)  {                      		// if it is in directory
+		 dir.position[index].processorOff(pnum);   	// turn off this processor bit
       }
    }
    assert(victim != 0);
    if (victim->getFlags() == MODIFIED) {
-      // STATS:  writebacks and mem transactions handled inline in header
+      // STATS:  writebacks handled inline in header
       writeBack(addr);
    }
 

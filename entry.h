@@ -43,10 +43,10 @@ class entry  {
         // Self-explanatory getters and setters
         void setStateEM()             { state = EXCLUSIVE_MODIFIED; }
         void setStateS()              { state = SHARED; }
-        bool isEM()                   { if (state == EXCLUSIVE_MODIFIED) return true;  else return false; }
-        bool isS()                    { if (state == SHARED) return true;  else return false; }
-        bool isU()                    { if (state == UNOWNED) return true; else return false; }
-        bool isInProcCache(int pn)    { if (processor[pn] == 1) return true;  else return false; }
+        bool isEM()                   { return state == EXCLUSIVE_MODIFIED; }
+        bool isS()                    { return state == SHARED; }
+        bool isU()                    { return state == UNOWNED; }
+        bool isInProcCache(int pn)    { return processor[pn] == 1; }
         void processorOn(int p)       { processor[p] = 1; }
         void processorOff(int p)      { processor[p] = 0; if (tagNoLongerCached()) clearAll(); }      
         void setTag(ulong addr)       { tag = addr; }

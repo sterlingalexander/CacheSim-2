@@ -21,7 +21,7 @@ directory::directory(int size) {
 int directory::findTagPos(ulong tag)  {
    
    for (int i = 0; i < DIRECTORY_SIZE; i++)  {  // linear traversal search...quick but inefficient
-      if (position[i].tag == tag)
+      if (position[i].tag == tag && !position[i].isU())
          return i;
    }
    return -1;
