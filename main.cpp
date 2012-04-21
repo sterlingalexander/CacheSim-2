@@ -17,15 +17,15 @@ int DEBUG = 0;
 
 int main(int argc, char *argv[]) {
 
-   if ( argc > 1)
-      DEBUG = atoi(argv[1]);
-   
-   int size = 10;
-   DIRECTORY_SIZE = size;
-   
-   directory dir(size);
-   dir.position[5].onThree();
-   dir.position[5].dirty = true;
-   cout << "\t==== Directory contents ====\n\n" << dir << "\n";
+    if (argc > 1)
+        DEBUG = atoi(argv[1]);
+
+    int size = 10;
+    DIRECTORY_SIZE = size;
+
+    directory dir(size);
+    dir.position[5].onThree();
+    dir.position[5].dirty = true;
+    cout << "\t==== Directory contents ====\n\n" << dir << "\n";
 
 }

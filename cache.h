@@ -16,10 +16,11 @@
 typedef unsigned long ulong;
 typedef unsigned char uchar;
 typedef unsigned int uint;
-extern int NODES;                   // global from main
+extern int NODES; // global from main
 //extern directory dir;               // put directory in global scope of cache, hackish but avoids moderate refactor
 
 /****add new states, based on the protocol****/
+
 /*
 enum {
     INVALID = 0,
@@ -28,13 +29,13 @@ enum {
     SHARED_MODIFIED,
     MODIFIED // Also DIRTY
 };
-*/
+ */
 
 enum {
-   EXCLUSIVE = 0, 
-   MODIFIED,
-   SHARED,
-   INVALID
+    EXCLUSIVE = 0,
+    MODIFIED,
+    SHARED,
+    INVALID
 };
 
 class cacheLine {
@@ -123,7 +124,10 @@ public:
     cacheLine *fillLine(ulong addr, directory &dir, int proc_num);
     cacheLine *findLine(ulong addr);
     cacheLine *getLRU(ulong);
-    void recordInvalidation()          { ++invalidations; }
+
+    void recordInvalidation() {
+        ++invalidations;
+    }
 
     ulong getRM() {
         return readMisses;
@@ -148,7 +152,7 @@ public:
     void writeBack(ulong) {
         writeBacks++;
     }
-    
+
     void Access(ulong, uchar, std::vector<Cache*> &, directory &, int);
     void printStats();
     void updateLRU(cacheLine *);
@@ -156,12 +160,12 @@ public:
     //******///
     //add other functions to handle bus transactions///
     //******///
-    
-   //bool busUpd(ulong, std::vector<Cache*> &);
-   //bool busRd(ulong, std::vector<Cache*> &);
-   //bool busUpd(ulong);
-   //bool busRd(ulong);
-    
+
+    //bool busUpd(ulong, std::vector<Cache*> &);
+    //bool busRd(ulong, std::vector<Cache*> &);
+    //bool busUpd(ulong);
+    //bool busRd(ulong);
+
 };
 
 #endif

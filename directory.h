@@ -12,18 +12,20 @@ typedef unsigned long ulong;
 typedef unsigned char uchar;
 typedef unsigned int uint;
 
-class directory  {
-   public:
+class directory {
+public:
 
-      directory( int );          // constructor
-      ~directory()  {  }         // destructor
-      friend ostream& operator<<(ostream &stream, directory obj);    // useful for debugging small traces
-      
-      int findTagPos(ulong tag);      // returns position of found tag
-      int findUnownedPos();            // returns position of first unowned block
-      
-      entry *position;                 // pointer to array of directory entries.
-   
+    directory(int); // constructor
+
+    ~directory() {
+    } // destructor
+    friend ostream& operator<<(ostream &stream, directory obj); // useful for debugging small traces
+
+    int findTagPos(ulong tag); // returns position of found tag
+    int findUnownedPos(); // returns position of first unowned block
+
+    entry *position; // pointer to array of directory entries.
+
 };
 
 #endif
