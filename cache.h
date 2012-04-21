@@ -17,6 +17,7 @@ typedef unsigned long ulong;
 typedef unsigned char uchar;
 typedef unsigned int uint;
 extern int NODES;                   // global from main
+//extern directory dir;               // put directory in global scope of cache, hackish but avoids moderate refactor
 
 /****add new states, based on the protocol****/
 /*
@@ -118,7 +119,7 @@ public:
     }
 
     cacheLine *findLineToReplace(ulong addr);
-    cacheLine *fillLine(ulong addr);
+    cacheLine *fillLine(ulong addr, directory dir, int proc_num);
     cacheLine *findLine(ulong addr);
     cacheLine *getLRU(ulong);
     void recordInvalidation()          { ++invalidations; }

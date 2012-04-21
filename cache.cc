@@ -70,7 +70,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             dir.position[insert_pos].setTag(addr);             // set directory tag
             dir.position[insert_pos].processorOn(proc_num);    // turn this processor bit on
             dir.position[insert_pos].setStateEM();             // set directory to EXCLUSIVE_MODIFIED state
-            cacheLine *newline = fillLine(addr);               // put line in cache
+            cacheLine *newline = fillLine(addr, dir, proc_num);               // put line in cache
             newline->setFlags(EXCLUSIVE);                      // set cache state to EXCLUSIVE
             ++memoryTransactions;                              // STATS:  record memory transaction
          }
@@ -78,7 +78,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             dir.position[index].processorOn(proc_num);   // turn on this processor in directory
             dir.position[index].setStateS();             // set directory to SHARED state
             ++cacheToCacheTransfers;                     // STATS:  record transfer from cache to cache
-            cacheLine *newline = fillLine(addr);         // put line in cache
+            cacheLine *newline = fillLine(addr, dir, proc_num);         // put line in cache
             newline->setFlags(SHARED);                   // set cache state to SHARED
             for (int i = 0; i < NODES; ++i)  {           // loop through processors in directory
                if (dir.position[index].isInProcCache(i))  {  // change all in directory to SHARED state 
@@ -98,7 +98,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             dir.position[insert_pos].processorOn(proc_num);    // turn on this processor bit
             dir.position[insert_pos].setStateEM();             // set directory state to EXCLUSIVE_MODIFIED
             dir.position[insert_pos].setDirty();               // set dirty bit on
-            cacheLine *newline = fillLine(addr);               // put line in cache
+            cacheLine *newline = fillLine(addr, dir, proc_num);               // put line in cache
             newline->setFlags(MODIFIED);                       // set cache state to modified
             ++memoryTransactions;                              // STATS:  record memory transaction
          }
@@ -118,7 +118,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             dir.position[index].processorOn(proc_num);      // turn on this processor bit
             dir.position[index].setStateEM();               // set directory state to EXCLUSIVE_MODIFIED
             dir.position[index].setDirty();                 // set dirty bit on
-            cacheLine *newline = fillLine(addr);            // fill cache line
+            cacheLine *newline = fillLine(addr, dir, proc_num);            // fill cache line
             newline->setFlags(MODIFIED);                    // set cache flag
             ++cacheToCacheTransfers;                        // STATS:  record inter-cache transfers
          }
@@ -160,7 +160,6 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
       }
    }
 }
-
 
 /*look up line*/
 cacheLine *Cache::findLine(ulong addr) {
@@ -209,42 +208,42 @@ cacheLine * Cache::getLRU(ulong addr) {
             min = cache[i][j].getSeq();
         }
     }
-
     assert(victim != assoc);
-    
-    //============================
-    // DO DIRECTORY EVICTION HERE|
-    //============================
-    
-    
     return &(cache[i][victim]);
 }
 
 /*find a victim, move it to MRU position*/
 cacheLine *Cache::findLineToReplace(ulong addr) {
-    cacheLine * victim = getLRU(addr);
-    updateLRU(victim);
+   cacheLine * victim = getLRU(addr);
+   updateLRU(victim);
 
-    return (victim);
+   return (victim);
 }
 
 /*allocate a new line*/
-cacheLine *Cache::fillLine(ulong addr) {
-    ulong tag;
+cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
+   ulong tag;
 
-    cacheLine *victim = findLineToReplace(addr);
-    assert(victim != 0);
-    if (victim->getFlags() == MODIFIED) {
-        writeBack(addr);
-    }
+   cacheLine *victim = findLineToReplace(addr);
+   if (victim->getFlags() != INVALID)  {
+      int index = dir.findTagPos(addr);
+      if (index > 0)  {
+         dir.position[index].processorOff(pnum);
+      }
+   }
+   assert(victim != 0);
+   if (victim->getFlags() == MODIFIED) {
+      // Maybe increment writeback count here?
+      writeBack(addr);
+   }
 
-    tag = calcTag(addr);
-    victim->setTag(tag);
-    victim->setFlags(INVALID);
-    /**note that this cache line has been already
-       upgraded to MRU in the previous function (findLineToReplace)**/
+   tag = calcTag(addr);
+   victim->setTag(tag);
+   victim->setFlags(INVALID);
+   /**note that this cache line has been already
+    upgraded to MRU in the previous function (findLineToReplace)**/
 
-    return victim;
+   return victim;
 }
 
 void Cache::printStats() {
