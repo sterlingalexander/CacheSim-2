@@ -107,7 +107,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                if (dir.position[index].isInProcCache(i))  {
                   cacheLine *invalid_line = cachesArray[i]->findLine(addr);
                   if (invalid_line != NULL)  {
-                     invalid_line->setFlags(INVALID);
+                     invalid_line->invalidate();
                      cachesArray[i]->recordInvalidation();  // record invalidation in proper cache
                      //++invalidations;
                   }
@@ -151,7 +151,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                   if (proc_num != i && dir.position[index].isInProcCache(i))  {
                      cacheLine *line_invalid = cachesArray[i]->findLine(addr);
                      if (line_invalid != NULL)  {
-                        line_invalid->setFlags(INVALID);
+                        line_invalid->invalidate();
                         cachesArray[i]->recordInvalidation();   // record invalidation in proper cache
                         //++invalidations;
                      }
