@@ -269,7 +269,7 @@ void Cache::printStats() {
     printf("06. number of writebacks:                         %li\n", writeBacks);
     printf("07. number of invalidations:                      %li\n", invalidations);
     printf("08. number of cache to cache transfers:           %li\n", cacheToCacheTransfers);
-    printf("09. in cache but not in a directory:              %li\n", inCacheNotDirectory);
+    //printf("09. in cache but not in a directory:              %li\n", inCacheNotDirectory);
 }
 
     
