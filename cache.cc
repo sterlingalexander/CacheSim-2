@@ -226,6 +226,7 @@ cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
 
    cacheLine *victim = findLineToReplace(addr);
    if (victim->getFlags() != INVALID)  {
+      cout << "Eviction in progress\n";
       int index = dir.findTagPos(addr);
       if (index > 0)  {
          dir.position[index].processorOff(pnum);
@@ -233,7 +234,7 @@ cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
    }
    assert(victim != 0);
    if (victim->getFlags() == MODIFIED) {
-      // Maybe increment writeback count here?
+      // STATS:  writebacks and mem transactions handled inline in header
       writeBack(addr);
    }
 
