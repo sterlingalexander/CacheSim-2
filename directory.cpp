@@ -18,10 +18,10 @@ directory::directory(int size) {
 }
 
 // returns index of the found tag, returns -1 if tag is not in directory
-int directory::findTagPos(ulong addr)  {
+int directory::findTagPos(ulong tag)  {
    
    for (int i = 0; i < DIRECTORY_SIZE; i++)  {  // linear traversal search...quick but inefficient
-      if (position[i].tag == addr)
+      if (position[i].tag == tag)
          return i;
    }
    return -1;
