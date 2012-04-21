@@ -31,11 +31,11 @@ class entry  {
          
       // initialize directory line to empty state
       void clearAll()   {  tag = 0; state = UNOWNED; dirty = false;
-                           for (int i = 0; i < 4; i++)  processor[i] = 0;
+                           for (int i = 0; i < NODES; i++)  processor[i] = 0;
                            if (DEBUG)  {
                               cout << "In the definition of entry, where we just created:\n";
                               cout << "\t\t" << tag << ", " << state << ", " << dirty << " , ";
-                              for (int i = 0; i < 4; i++) cout << processor[i] << ", ";
+                              for (int i = 0; i < NODES; i++) cout << processor[i] << ", ";
                               cout << "\n";
                            }
                         }

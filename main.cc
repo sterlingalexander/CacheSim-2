@@ -57,7 +57,11 @@ int main(int argc, char *argv[]) {
    //int protocol   = atoi(argv[5]);	 /*0: Firefly, 1:Dragon*/
    char *fname = (char *) malloc(20);
    fname = argv[4];
+   if (argc == 6)  {
+      DEBUG = atoi(argv[5]);
+   }
    DIRECTORY_SIZE = cache_size * NODES / blk_size;       // set size of the directory
+   
    if (DEBUG) cout << "Directory size set to " << DIRECTORY_SIZE << " possible entries\n";
 
     //****************************************************//
