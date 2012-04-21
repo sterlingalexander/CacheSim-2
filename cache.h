@@ -119,7 +119,7 @@ public:
     }
 
     cacheLine *findLineToReplace(ulong addr);
-    cacheLine *fillLine(ulong addr, directory dir, int proc_num);
+    cacheLine *fillLine(ulong addr, directory &dir, int proc_num);
     cacheLine *findLine(ulong addr);
     cacheLine *getLRU(ulong);
     void recordInvalidation()          { ++invalidations; }
