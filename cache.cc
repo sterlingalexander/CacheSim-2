@@ -133,6 +133,10 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
       else  {                          // WRITE request
          if (index < 0)  {              // Case:  cache hit, directory miss (write)
             //cout << "THIS SHOULD PROBABLY NEVER HAPPEN\n\n";
+            dir.position[index].setTag(addr);               // set directory tag
+            dir.position[index].processorOn(proc_num);      // turn on this processor bit
+            dir.position[index].setStateEM();               // set directory state to EXCLUSIVE_MODIFIED
+            dir.position[index].setDirty();                 // set dirty bit on
             inCacheNotDirectory++;
             cacheLine *newline = findLine(addr);
             newline->setFlags(MODIFIED);
