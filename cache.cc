@@ -226,7 +226,6 @@ cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
 
    cacheLine *victim = findLineToReplace(addr);
    if (victim->getFlags() != INVALID)  {
-      cout << "Eviction in progress\n";
       int index = dir.findTagPos(addr);
       if (index > 0)  {
          dir.position[index].processorOff(pnum);
