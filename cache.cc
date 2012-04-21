@@ -53,6 +53,8 @@ Cache::Cache(int s, int a, int b) {
 since this function is an entry point
 to the memory hierarchy (i.e. caches)**/
 void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory &dir, int proc_num) {
+   ulong tag;
+
    currentCycle++; /*per cache global counter to maintain LRU order
                         among cache ways, updated on every cache access*/
 
@@ -60,14 +62,15 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
    else { reads++; }
 
    cacheLine *line = findLine(addr);
-    
+   tag = calcTag(addr);
+ 
    if (line == NULL || line->getFlags() == INVALID)  {     // --=== THESE ARE CACHE MISSES ===--
-      int index = dir.findTagPos(addr);      // search directory for index of tag (-1 denotes not found)
+      int index = dir.findTagPos(tag);      // search directory for index of tag (-1 denotes not found)
       if (op == 'r')  {                // READ request
          ++readMisses;                 // STATS:  record read miss
          if (index < 0)  {             // Case:  cache miss, directory miss (read)
             int insert_pos = dir.findUnownedPos();             // find first open directory position
-            dir.position[insert_pos].setTag(addr);             // set directory tag
+            dir.position[insert_pos].setTag(tag);             // set directory tag
             dir.position[insert_pos].processorOn(proc_num);    // turn this processor bit on
             dir.position[insert_pos].setStateEM();             // set directory to EXCLUSIVE_MODIFIED state
             cacheLine *newline = fillLine(addr, dir, proc_num);               // put line in cache
@@ -94,7 +97,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
          ++writeMisses;          // STATS:  record write miss
          if (index < 0)  {       // Case:  cache miss, directory miss (write)
             int insert_pos = dir.findUnownedPos();             // find first open directory position
-            dir.position[insert_pos].setTag(addr);             // set directory tag
+            dir.position[insert_pos].setTag(tag);             // set directory tag
             dir.position[insert_pos].processorOn(proc_num);    // turn on this processor bit
             dir.position[insert_pos].setStateEM();             // set directory state to EXCLUSIVE_MODIFIED
             dir.position[insert_pos].setDirty();               // set dirty bit on
@@ -114,7 +117,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
                   dir.position[index].processorOff(i);      // turn off invalid pocessor bits
                }
             }
-            dir.position[index].setTag(addr);               // set directory tag
+            dir.position[index].setTag(tag);               // set directory tag
             dir.position[index].processorOn(proc_num);      // turn on this processor bit
             dir.position[index].setStateEM();               // set directory state to EXCLUSIVE_MODIFIED
             dir.position[index].setDirty();                 // set dirty bit on
@@ -125,7 +128,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
       }
    }
    else  {                 // --=== THESE ARE CACHE HITS ===--
-      int index = dir.findTagPos(addr);
+      int index = dir.findTagPos(tag);
       if (op == 'r')  {                // READ request
          // Reading from your own cache on a hit won't do anything (line already tested as valid)
          // Case:  cache hit (will never check directory)
@@ -133,7 +136,7 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
       else  {                          // WRITE request
          if (index < 0)  {              // Case:  cache hit, directory miss (write)
             //cout << "THIS SHOULD PROBABLY NEVER HAPPEN\n\n";
-            //dir.position[index].setTag(addr);               // set directory tag
+            //dir.position[index].setTag(tag);               // set directory tag
             //dir.position[index].processorOn(proc_num);      // turn on this processor bit
             //dir.position[index].setStateEM();               // set directory state to EXCLUSIVE_MODIFIED
             //dir.position[index].setDirty();                 // set dirty bit on
@@ -228,11 +231,11 @@ cacheLine *Cache::findLineToReplace(ulong addr) {
 
 /*allocate a new line*/
 cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
-   ulong tag;
+   ulong tag = calcTag(addr);
 
    cacheLine *victim = findLineToReplace(addr);
    if (victim->getFlags() != INVALID)  {           // on cache eviction
-      int index = dir.findTagPos(addr);            // find position in directory
+      int index = dir.findTagPos(tag);            // find position in directory
       if (index >= 0)  {                            // if it is in directory
          dir.position[index].processorOff(pnum);   // turn off this processor bit
       }
@@ -243,7 +246,6 @@ cacheLine *Cache::fillLine(ulong addr, directory &dir, int pnum) {
       writeBack(addr);
    }
 
-   tag = calcTag(addr);
    victim->setTag(tag);
    victim->setFlags(INVALID);
    /**note that this cache line has been already
