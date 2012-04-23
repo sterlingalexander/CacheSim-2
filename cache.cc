@@ -68,18 +68,17 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
     tag = calcTag(addr);
 
     if (line == NULL || line->getFlags() == INVALID) { // --=== THESE ARE CACHE MISSES ===--
-        int index = dir.findTagPos(tag); // search directory for index of tag (-1 denotes not found)
+		cacheLine *newline = fillLine(addr, dir, proc_num); // put line in cache            
+	    int index = dir.findTagPos(tag); // search directory for index of tag (-1 denotes not found)
         if (op == 'r') { // READ request
             readMisses++; // STATS:  record read miss
             if (index < 0) { // Case:  cache miss, directory miss (read)
-                cacheLine *newline = fillLine(addr, dir, proc_num); // put line in cache            
                 int insert_pos = dir.findUnownedPos(); // find first open directory position
                 dir.position[insert_pos].setTag(tag); // set directory tag
                 dir.position[insert_pos].processorOn(proc_num); // turn this processor bit on
                 dir.position[insert_pos].setStateEM(); // set directory to EXCLUSIVE_MODIFIED state
                 newline->setFlags(EXCLUSIVE); // set cache state to EXCLUSIVE
             } else { // Case:  cache miss, directory hit (read)
-                cacheLine *newline = fillLine(addr, dir, proc_num); // put line in cache
                 if (dir.position[index].isEM()) {
 					cacheToCacheTransfers++;
 				}
@@ -101,14 +100,12 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
         } else { // WRITE request
             writeMisses++; // STATS:  record write miss
             if (index < 0) { // Case:  cache miss, directory miss (write)
-                cacheLine *newline = fillLine(addr, dir, proc_num); // put line in cache
                 int insert_pos = dir.findUnownedPos(); // find first open directory position
                 dir.position[insert_pos].setTag(tag); // set directory tag
                 dir.position[insert_pos].processorOn(proc_num); // turn on this processor bit
                 dir.position[insert_pos].setStateEM(); // set directory state to EXCLUSIVE_MODIFIED
                 newline->setFlags(MODIFIED); // set cache state to modified
             } else { // Case:  cache miss, directory hit (write)
-                cacheLine *newline = fillLine(addr, dir, proc_num); // fill cache line
                 if (dir.position[index].isEM()) {
 					cacheToCacheTransfers++;
 				}
