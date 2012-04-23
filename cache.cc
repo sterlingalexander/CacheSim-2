@@ -128,6 +128,8 @@ void Cache::Access(ulong addr, uchar op, vector<Cache*> &cachesArray, directory 
             }
         }
     } else { // --=== THESE ARE CACHE HITS ===--
+		/**since it's a hit, update LRU**/
+		updateLRU(line);
         int index = dir.findTagPos(tag);
         if (op == 'r') { // READ request
             // Reading from your own cache on a hit won't do anything (line already tested as valid)
